@@ -17,21 +17,25 @@ class MCPClient:
 
     async def connect(self, url: str, headers: Optional[dict] = None):
         with AsyncExitStack() as exit_stack:
-            self._streams_context = streamablehttp_client(url, headers=headers)
+            try:
+                self._streams_context = streamablehttp_client(url, headers=headers)
 
-            transport = await exit_stack.enter_async_context(self._streams_context)
-            read_stream, write_stream, _ = transport
+                transport = await exit_stack.enter_async_context(self._streams_context)
+                read_stream, write_stream, _ = transport
 
-            self._session_context = ClientSession(
-                read_stream, write_stream
-            )  # pylint: disable=W0201
+                self._session_context = ClientSession(
+                    read_stream, write_stream
+                )  # pylint: disable=W0201
 
-            self.session = await self.exit_stack.enter_async_context(
-                self._session_context
-            )
-            with anyio.fail_after(10):
-                await self.session.initialize()
-            self.exit_stack = exit_stack.pop_all()
+                self.session = await self.exit_stack.enter_async_context(
+                    self._session_context
+                )
+                with anyio.fail_after(10):
+                    await self.session.initialize()
+            except Exception as e:
+                raise e
+            finally:
+                self.exit_stack = exit_stack.pop_all()
 
     async def list_tool_specs(self) -> Optional[dict]:
         if not self.session:
