@@ -2,6 +2,8 @@ import asyncio
 from typing import Optional
 from contextlib import AsyncExitStack
 
+import anyio
+
 from mcp import ClientSession
 from mcp.client.auth import OAuthClientProvider, TokenStorage
 from mcp.client.streamable_http import streamablehttp_client
@@ -11,13 +13,13 @@ from mcp.shared.auth import OAuthClientInformationFull, OAuthClientMetadata, OAu
 class MCPClient:
     def __init__(self):
         self.session: Optional[ClientSession] = None
-        self.exit_stack = AsyncExitStack()
+        self.exit_stack = None
 
     async def connect(self, url: str, headers: Optional[dict] = None):
-        try:
+        with AsyncExitStack() as exit_stack:
             self._streams_context = streamablehttp_client(url, headers=headers)
 
-            transport = await self.exit_stack.enter_async_context(self._streams_context)
+            transport = await exit_stack.enter_async_context(self._streams_context)
             read_stream, write_stream, _ = transport
 
             self._session_context = ClientSession(
@@ -27,10 +29,9 @@ class MCPClient:
             self.session = await self.exit_stack.enter_async_context(
                 self._session_context
             )
-            await self.session.initialize()
-        except Exception as e:
-            await self.disconnect()
-            raise e
+            with anyio.fail_after(10):
+                await self.session.initialize()
+            self.exit_stack = exit_stack.pop_all()
 
     async def list_tool_specs(self) -> Optional[dict]:
         if not self.session:
