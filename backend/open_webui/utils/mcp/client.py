@@ -37,7 +37,6 @@ class MCPClient:
             except Exception as e:
                 log.debug("Error connecting MCP client, disconnecting...")
                 await asyncio.shield(self.disconnect())
-                self.exit_stack = exit_stack.pop_all()
                 raise e
                 
 
