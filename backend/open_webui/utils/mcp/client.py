@@ -34,6 +34,7 @@ class MCPClient:
                 with anyio.fail_after(10):
                     await self.session.initialize()
             except Exception as e:
+                log.debug("Error connecting MCP client, disconnecting...")
                 await asyncio.shield(self.disconnect())
                 raise e
             finally:
