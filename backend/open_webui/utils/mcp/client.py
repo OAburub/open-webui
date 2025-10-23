@@ -33,13 +33,13 @@ class MCPClient:
                 )
                 with anyio.fail_after(10):
                     await self.session.initialize()
+                self.exit_stack = exit_stack.pop_all()
             except Exception as e:
                 log.debug("Error connecting MCP client, disconnecting...")
                 await asyncio.shield(self.disconnect())
-                raise e
-            finally:
-                log.debug("Exit stack pop all for MCP client connection")
                 self.exit_stack = exit_stack.pop_all()
+                raise e
+                
 
     async def list_tool_specs(self) -> Optional[dict]:
         if not self.session:
