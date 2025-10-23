@@ -1308,22 +1308,21 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                 except Exception as e:
                     log.debug(e)
                     continue
-        try:
-            tools_dict = await get_tools(
-                request,
-                tool_ids,
-                user,
-                {
-                    **extra_params,
-                    "__model__": models[task_model_id],
-                    "__messages__": form_data["messages"],
-                    "__files__": metadata.get("files", []),
-                },
-            )
-            if mcp_tools_dict:
-                tools_dict = {**tools_dict, **mcp_tools_dict}
-        except Exception as e:
-            log.debug(f"Error getting tools: {e}")
+
+        tools_dict = await get_tools(
+            request,
+            tool_ids,
+            user,
+            {
+                **extra_params,
+                "__model__": models[task_model_id],
+                "__messages__": form_data["messages"],
+                "__files__": metadata.get("files", []),
+            },
+        )
+        if mcp_tools_dict:
+            tools_dict = {**tools_dict, **mcp_tools_dict}
+
     if direct_tool_servers:
         for tool_server in direct_tool_servers:
             tool_specs = tool_server.pop("specs", [])
