@@ -33,6 +33,7 @@ class MCPClient:
                 with anyio.fail_after(10):
                     await self.session.initialize()
             except Exception as e:
+                await asyncio.shield(self.disconnect())
                 raise e
             finally:
                 self.exit_stack = exit_stack.pop_all()
