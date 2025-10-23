@@ -8,7 +8,8 @@ from mcp import ClientSession
 from mcp.client.auth import OAuthClientProvider, TokenStorage
 from mcp.client.streamable_http import streamablehttp_client
 from mcp.shared.auth import OAuthClientInformationFull, OAuthClientMetadata, OAuthToken
-
+import logging
+log = logging.getLogger(__name__)
 
 class MCPClient:
     def __init__(self):
@@ -105,6 +106,7 @@ class MCPClient:
 
     async def disconnect(self):
         # Clean up and close the session
+        log.debug("Disconnecting MCP client...")
         await self.exit_stack.aclose()
 
     async def __aenter__(self):
