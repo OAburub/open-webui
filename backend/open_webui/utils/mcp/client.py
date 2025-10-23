@@ -27,7 +27,7 @@ class MCPClient:
                     read_stream, write_stream
                 )  # pylint: disable=W0201
 
-                self.session = await self.exit_stack.enter_async_context(
+                self.session = await exit_stack.enter_async_context(
                     self._session_context
                 )
                 with anyio.fail_after(10):
