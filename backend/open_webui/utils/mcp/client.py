@@ -38,6 +38,7 @@ class MCPClient:
                 await asyncio.shield(self.disconnect())
                 raise e
             finally:
+                log.debug("Exit stack pop all for MCP client connection")
                 self.exit_stack = exit_stack.pop_all()
 
     async def list_tool_specs(self) -> Optional[dict]:
