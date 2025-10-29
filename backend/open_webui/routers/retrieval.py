@@ -2142,7 +2142,7 @@ async def process_web_search(
                 requests_per_second=request.app.state.config.WEB_LOADER_CONCURRENT_REQUESTS,
                 trust_env=request.app.state.config.WEB_SEARCH_TRUST_ENV,
             )
-            docs = await loader.aload()
+            docs = await run_in_threadpool(loader.aload)
 
         urls = [
             doc.metadata.get("source") for doc in docs if doc.metadata.get("source")
